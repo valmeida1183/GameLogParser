@@ -1,36 +1,45 @@
 ﻿using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 
-namespace _03_Domain;
+namespace Domain;
 
-public class GameLogParser : IParser
+public class GameLogParser : IGameLogParser
 {
+    private readonly IFileReader _fileReader;
+
     private string _filePath;
     private GameInfo _currentGameInfo;
     private List<Dictionary<string, GameInfo>> _games;
     private Dictionary<int, string> _playerIdsToNames;
     private int _gameCount;
 
-    public GameLogParser()
+    public GameLogParser(IOptions<GameLogParserSettings> options, IFileReader fileReader)
     {
-        LoadLogFile();
+        _fileReader = fileReader;
+        
+        LoadFilePath(options?.Value?.FilePath);
     }
 
     public IEnumerable<Dictionary<string, GameInfo>> ParseLogFile()
     {
         ResetProperties();
 
-        var lines = File.ReadAllLines(_filePath);
+        var lines = _fileReader.ReadLines(_filePath);
 
         foreach (var line in lines)
         {
-            if (line.Contains("InitGame:") || _currentGameInfo == null)
+            if (line.Contains("InitGame:"))
             {
+                FinishCurrentGameInfo();
                 InitNewGameInfo();
 
                 continue;
             }
+
+            if(_currentGameInfo == null)
+                continue;
 
             if (line.Contains("ClientUserinfoChanged:"))
             {
@@ -42,21 +51,25 @@ public class GameLogParser : IParser
             }
             else if (line.Contains("ShutdownGame"))
             {
-                FinishGameInfo();
+                FinishCurrentGameInfo();
             }
         }
 
         return _games;
     }
 
-    private void LoadLogFile()
+    private void LoadFilePath(string filePath)
     {
-        _filePath = Path.Combine("..", "GameLog.txt");
-
-        if (!File.Exists(_filePath))
+        if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new FileNotFoundException($"Log file not found at path: {_filePath}");
+            throw new ArgumentNullException($"File path is cannot be empty");
         }
+        else if (!_fileReader.FileExists(filePath))
+        {
+            throw new FileNotFoundException($"Log file not found at path: {filePath}");
+        }
+
+        _filePath = filePath;
     }
 
     private void ResetProperties()
@@ -117,8 +130,11 @@ public class GameLogParser : IParser
         }
     }
 
-    private void FinishGameInfo()
+    private void FinishCurrentGameInfo()
     {
+        if (_currentGameInfo == null)
+            return;
+
         _games.Add(new Dictionary<string, GameInfo>
         {
             { $"game_{_gameCount}", _currentGameInfo }
