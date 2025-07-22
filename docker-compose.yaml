@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  game-parser-api:
+    image: vinicius1183/game-log-parser-api:v1.0.1
+    container_name: game-parser-api
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;
+      - GameLogParser__FilePath=/app/GameLog.txt
+    volumes:
+      - ./GameLog.txt:/app/GameLog.txt:ro

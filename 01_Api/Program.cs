@@ -19,7 +19,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(); // use https://localhost:7060/scalar
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
