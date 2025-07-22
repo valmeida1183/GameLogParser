@@ -2,7 +2,6 @@
 using Domain.Interfaces;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Reflection;
 
 namespace UnitTest;
 
@@ -19,7 +18,7 @@ public class GameLogParserTests
     }
 
     [Fact]
-    public void Parse_ShouldReturnSingleGame_WhenOneInitGameExists()
+    public void ParseLogFile_ShouldReturnSingleGame_WhenOneInitGameExists()
     {
         // Ararnge
         _mockFileReader.Setup(r => r.FileExists(It.IsAny<string>())).Returns(true);
@@ -48,7 +47,7 @@ public class GameLogParserTests
     }
 
     [Fact]
-    public void Parse_ShouldHandleKillByWorldFlagAsAValidTotalKills()
+    public void ParseLogFile_ShouldHandleKillByWorldFlagAsAValidTotalKills()
     {
         _mockFileReader.Setup(r => r.FileExists(It.IsAny<string>())).Returns(true);
         _mockFileReader.Setup(r => r.ReadLines(It.IsAny<string>())).Returns(new[]
@@ -73,7 +72,7 @@ public class GameLogParserTests
     }
 
     [Fact]
-    public void Parse_ShouldHandleMultipleGames()
+    public void ParseLogFile_ShouldHandleMultipleGames()
     {
         _mockFileReader.Setup(r => r.FileExists(It.IsAny<string>())).Returns(true);
         _mockFileReader.Setup(r => r.ReadLines(It.IsAny<string>())).Returns(new[]
@@ -109,7 +108,7 @@ public class GameLogParserTests
     }
 
     [Fact]
-    public void Parse_ShouldCountKillsOnlyIfKillerIsDifferentThenVictim()
+    public void ParseLogFile_ShouldCountKillsOnlyIfKillerIsDifferentThenVictim()
     {
         _mockFileReader.Setup(r => r.FileExists(It.IsAny<string>())).Returns(true);
         _mockFileReader.Setup(r => r.ReadLines(It.IsAny<string>())).Returns(new[]
